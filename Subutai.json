@@ -1,0 +1,113 @@
+{
+    "name": "${environmentName}",
+    "description": "Magento is a flexible eCommerce platfrom",
+    "version": "1.0",
+    "author": "https://github.com/etursunbaev",
+    "containers": [
+        {
+            "hostname": "${webContainerName}",
+            "template": "debian-stretch",
+            "peer-criteria": "HTTP-GROUP",
+            "size": "${containerSize}",
+            "port-mapping": [
+                {
+                    "protocol": "https",
+                    "domain": "${domainName}",
+                    "internal-port": "80",
+                    "external-port": "443"
+                }
+            ]
+        }
+    ],
+    "peer-criteria": [
+        {
+            "name": "HTTP-GROUP"
+        }
+    ],
+    "ansible-configuration": {
+        "source-url": "https://github.com/etursunbaev/magento-blueprint/archive/master.zip",
+        "ansible-playbook": "site.yml",
+        "extra-vars": [
+            {
+                "key": "domain_name",
+                "value": "${domainName}"
+            }, 
+            {
+                "key": "magento_dbuser_pwd",
+                "value": "${magentodbUserpwd}"
+            },
+            {
+                "key": "magento_version",
+                "value": "${magentoVersion}"
+            },
+            {
+                "key": "magento_admin_username",
+                "value": "${magentoAdmin}"
+            },
+            {
+                "key": "magento_admin_username_pwd",
+                "value": "${magentoAdminpwd}"
+            },
+            {
+                "key": "container_hostname",
+                "value": "${webContainerName}"
+            }
+        ],
+        "groups": [
+            {
+                "name": "mbp",
+                "hostnames": [
+                    "${webContainerName}"
+                ]
+            }
+        ]
+    },
+    "user-variables": {
+        "environmentName": {
+            "description": "Enter the environment name",
+            "type": "string",
+            "default": "tbp",
+            "validation": "[a-zA-Z0-9]+"
+        },
+        "domainName": {
+            "description": "Enter the application domain name",
+            "type": "domain",
+            "default": "change.the.domain",
+            "validation": "[a-zA-Z0-9]+"
+        },
+        "magentodbUserpwd": {
+            "description": "MySQL Magento DB user password",
+            "type": "string",
+            "default": "change_the_password"
+        },
+        "magentoVersion": {
+            "description": "Magento version taken from https://github.com/magento/magento2/releases",
+            "type": "string",
+            "default": "2.3.1"
+        },
+        "magentoAdmin": {
+            "description": "Magento application admin username",
+            "type": "string",
+            "default": "admin",
+            "validation": "[a-zA-Z]+"
+        },
+        "magentoAdminpwd": {
+            "description": "Magento application admin username password",
+            "type": "string",
+            "default": "admin123",
+            "validation": "[a-zA-Z0-9]+"
+        },
+        "webContainerName": {
+            "description": "Enter the container's hostname",
+            "type": "string",
+            "default": "mbp",
+            "validation": "[a-zA-Z0-9]+"
+        },
+        "containerSize": {
+            "description": "Container Size",
+            "type": "enum",
+            "default": "MEDIUM",
+            "validation": "MEDIUM,LARGE,HUGE"
+        }
+    }
+}

@@ -1,0 +1,146 @@
+---
+- hosts: mbp
+  remote_user: root
+  tasks:
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - apache2
+        - mysql-server
+        - apt-transport-https
+        - python-mysqldb
+        - git
+        - curl
+        - sudo
+    
+    - name: Add PHP repository key
+      apt_key:
+        url: https://packages.sury.org/php/apt.gpg
+        state: present
+
+    - name: Add PHP repository
+      apt_repository:
+        repo: "deb https://packages.sury.org/php/ stretch main"
+        state: present
+        update_cache: yes
+
+    - name: Install PHP7.1 and required extenstions
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - php7.1
+        - php7.1-cli
+        - php7.1-common
+        - php7.1-json
+        - php7.1-opcache
+        - php7.1-mysql
+        - php7.1-mbstring
+        - php7.1-mcrypt
+        - php7.1-zip
+        - php7.1-fpm
+        - php7.1-bcmath
+        - php7.1-soap
+        - php7.1-curl
+        - php7.1-dom
+        - php7.1-gd
+        - php7.1-intl
+        - php7.1-simplexml
+        - php7.1-xsl
+        - libapache2-mod-php7.1 
+    
+    - name: Add system group "magento"
+      group:
+        name: magento
+        state: present
+
+    - name: Create system user magento
+      user:
+        name: magento
+        system: yes
+        createhome: yes
+        home: /home/magento
+        shell: /bin/bash
+        groups: magento,www-data
+
+    - name: Validate sudoers
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%magento ALL='
+        line: '%magento ALL=(ALL) NOPASSWD: ALL'
+        validate: '/usr/sbin/visudo -cf %s'
+    
+    - name: Enable modules
+      apache2_module:
+        name: "{{ item }}"
+        state: present
+        identifier: "{{ item }}_module"
+      with_items:
+        - rewrite
+        - ssl
+        #- php7.1
+      register: modules
+    
+    - name: Create database
+      mysql_db:
+        name: magento
+        state: present
+
+    - mysql_user:
+        name: magento
+        password: "{{ magento_dbuser_pwd }}"
+        priv: '*.*:ALL,GRANT'
+        state: present
+
+    - name: install composer
+      shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+      args:
+        creates: /usr/local/bin/composer
+
+    - name: Clone Magento
+      git:
+        repo: https://github.com/magento/magento2.git
+        dest: /var/www/magento
+        clone: yes
+        version: "{{ magento_version }}"
+        force: yes
+    
+    - name: Install deps via composer
+      composer:
+        command: install
+        working_dir: /var/www/magento
+
+    - name: Configure Magento
+      shell: php -f bin/magento setup:install --base-url=https://{{ domain_name }} --backend-frontname=admin --db-host=localhost --db-name=magento --db-user=magento --db-password={{ magento_dbuser_pwd }} --admin-firstname=Magento --admin-lastname=User --admin-email=youremail@email.com --admin-user={{ magento_admin_username }} --admin-password={{ magento_admin_username_pwd }} --language=en_US --currency=USD --use-rewrites=1
+      args:
+        chdir: /var/www/magento
+
+    - name: Rename file
+      shell: mv /var/www/magento/pub/errors/local.xml.sample /var/www/magento/pub/errors/local.xml
+
+    - name: Deploy Static Content
+      shell: php -f bin/magento setup:static-content:deploy -f
+      args:
+        chdir: /var/www/magento
+
+    - name: Verify ownership
+      file:
+        path: /var/www/magento/
+        owner: magento
+        group: www-data
+        recurse: yes
+
+    - name: Upload config
+      template:
+        src: apache.conf
+        dest: /etc/apache2/sites-enabled/{{ domain_name }}.conf
+      register: config
+    
+    - name: Restart Apache
+      systemd:
+        name: apache2.service
+        state: restarted
+      when: config.changed or modules.changed
