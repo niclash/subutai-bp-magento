@@ -1,5 +1,5 @@
 ---
-- hosts: mbp
+- hosts: all
   remote_user: root
   tasks:
     - name: Install required packages
@@ -50,28 +50,6 @@
         - php7.1-simplexml
         - php7.1-xsl
         - libapache2-mod-php7.1 
-    
-    - name: Add system group "magento"
-      group:
-        name: magento
-        state: present
-
-    - name: Create system user magento
-      user:
-        name: magento
-        system: yes
-        createhome: yes
-        home: /home/magento
-        shell: /bin/bash
-        groups: magento,www-data
-
-    - name: Validate sudoers
-      lineinfile:
-        path: /etc/sudoers
-        state: present
-        regexp: '^%magento ALL='
-        line: '%magento ALL=(ALL) NOPASSWD: ALL'
-        validate: '/usr/sbin/visudo -cf %s'
     
     - name: Enable modules
       apache2_module:
@@ -126,10 +104,10 @@
       args:
         chdir: /var/www/magento
 
-    - name: Verify ownership
+    - name: Set ownership
       file:
         path: /var/www/magento/
-        owner: magento
+        owner: www-data
         group: www-data
         recurse: yes
 
@@ -143,4 +121,5 @@
       systemd:
         name: apache2.service
         state: restarted
+        enabled: yes
       when: config.changed or modules.changed

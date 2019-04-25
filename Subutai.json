@@ -1,7 +1,7 @@
 {
     "name": "${environmentName}",
     "description": "Magento is a flexible eCommerce platfrom",
-    "version": "1.0",
+    "version": "1.1",
     "author": "https://github.com/etursunbaev",
     "containers": [
         {
@@ -25,8 +25,8 @@
         }
     ],
     "ansible-configuration": {
-        "source-url": "https://github.com/etursunbaev/magento-blueprint/archive/master.zip",
-        "ansible-playbook": "site.yml",
+        "source-url": "https://github.com/niclash/subutai-bp-magento/archive/master.zip",
+        "ansible-playbook": "ansible.yml",
         "extra-vars": [
             {
                 "key": "domain_name",
@@ -34,11 +34,11 @@
             }, 
             {
                 "key": "magento_dbuser_pwd",
-                "value": "${magentodbUserpwd}"
+                "value": "${magentoAdminpwd}"
             },
             {
                 "key": "magento_version",
-                "value": "${magentoVersion}"
+                "value": "2.3.1"
             },
             {
                 "key": "magento_admin_username",
@@ -55,9 +55,9 @@
         ],
         "groups": [
             {
-                "name": "mbp",
+                "name": "magento",
                 "hostnames": [
-                    "${webContainerName}"
+                    "magento"
                 ]
             }
         ]
@@ -73,17 +73,7 @@
             "description": "Enter the application domain name",
             "type": "domain",
             "default": "change.the.domain",
-            "validation": "[a-zA-Z0-9]+"
-        },
-        "magentodbUserpwd": {
-            "description": "MySQL Magento DB user password",
-            "type": "string",
-            "default": "change_the_password"
-        },
-        "magentoVersion": {
-            "description": "Magento version taken from https://github.com/magento/magento2/releases",
-            "type": "string",
-            "default": "2.3.1"
+            "validation": ".*"
         },
         "magentoAdmin": {
             "description": "Magento application admin username",
@@ -92,16 +82,10 @@
             "validation": "[a-zA-Z]+"
         },
         "magentoAdminpwd": {
-            "description": "Magento application admin username password",
+            "description": "Magento application admin username password, at least 8 characters long. Valid characters are: \"'a-zA-Z0-9_+!@#$%^&*()=- ",
             "type": "string",
-            "default": "admin123",
-            "validation": "[a-zA-Z0-9]+"
-        },
-        "webContainerName": {
-            "description": "Enter the container's hostname",
-            "type": "string",
-            "default": "mbp",
-            "validation": "[a-zA-Z0-9]+"
+            "default": "<MUST change this>",
+            "validation": "[:;\"'a-zA-Z0-9_+!@#$%^&*()=-]{8,}"
         },
         "containerSize": {
             "description": "Container Size",
