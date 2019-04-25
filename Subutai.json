@@ -47,10 +47,6 @@
             {
                 "key": "magento_admin_username_pwd",
                 "value": "${magentoAdminpwd}"
-            },
-            {
-                "key": "container_hostname",
-                "value": "${webContainerName}"
             }
         ],
         "groups": [
