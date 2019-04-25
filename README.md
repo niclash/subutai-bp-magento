@@ -24,4 +24,4 @@ a larger container may help.
 - `LeaveAnsibleContainer` - The container that runs the Ansible script. If ticking this box, that
 container will remain on the host. Typically, don't need that.
 
-The Magento backend will be available at https://<domainName>/login.html
+The Magento backend will be available at https://<domainName>/admin
