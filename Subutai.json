@@ -63,7 +63,7 @@
             "description": "Enter the environment name",
             "type": "string",
             "default": "tbp",
-            "validation": "[a-zA-Z0-9]+"
+            "validation": "[a-zA-Z0-9_]+"
         },
         "domainName": {
             "description": "Enter the application domain name",
