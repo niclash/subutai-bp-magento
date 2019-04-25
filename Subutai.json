@@ -1,11 +1,11 @@
 {
     "name": "${environmentName}",
     "description": "Magento is a flexible eCommerce platfrom",
-    "version": "1.1",
+    "version": "1.1.1",
     "author": "https://github.com/etursunbaev",
     "containers": [
         {
-            "hostname": "${webContainerName}",
+            "hostname": "magento",
             "template": "debian-stretch",
             "peer-criteria": "HTTP-GROUP",
             "size": "${containerSize}",
